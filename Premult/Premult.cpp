@@ -113,9 +113,6 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
 #define kParamPremultOptionG "G", "G channel from input", "g"
 #define kParamPremultOptionB "B", "B channel from input", "b"
 #define kParamPremultOptionA "A", "A channel from input", "a"
-#define kParamClipInfo "clipInfo"
-#define kParamClipInfoLabel "Clip Info..."
-#define kParamClipInfoHint "Display information about the inputs"
 
 #define kParamInputPlane "inputPlane"
 #define kParamInputPlaneLabel "Plane"
@@ -641,26 +638,6 @@ PremultPlugin<isPremult>::render(const RenderArguments &args)
         }
 
         fillBlack( *this, args.renderWindow, args.renderScale, dst.get() );
-    } else if (_srcClip->getPreMultiplication() == eImageOpaque) {
-        // Opaque images can have alpha set to anything, but it should always be considered 1
-
-        const Image* srcImage;
-        Image* dstImage;
-        fetchSourceAndOutputImage(args, &srcImage, &dstImage);
-
-        // fetch main input image
-        auto_ptr<const Image> src(srcImage);
-        // get a dst image
-        auto_ptr<Image> dst(dstImage);
-        if ( !dst.get() ) {
-            throwSuiteStatusException(kOfxStatFailed);
-        }
-        if ( !src.get() ) {
-            setPersistentMessage(Message::eMessageError, "", "Could not fetch source image");
-            throwSuiteStatusException(kOfxStatFailed);
-        }
-
-        copyPixelsOpaque( *this, args.renderWindow, args.renderScale, src.get(), dst.get() );
     } else {
 
         const Image* srcImage;
@@ -758,17 +735,6 @@ PremultPlugin<isPremult>::isIdentity(const IsIdentityArguments &args,
     if (!_srcClip || !_srcClip->isConnected()) {
         return false;
     }
-    if (isPremult) {
-        if (_srcClip->getPreMultiplication() != eImagePreMultiplied) {
-            // input is UnPremult, output is Premult: no identity
-            return false;
-        }
-    } else {
-        if (_srcClip->getPreMultiplication() != eImageUnPreMultiplied) {
-            // input is Premult, output is UnPremult: no identity
-            return false;
-        }
-    }
     bool processR, processG, processB, processA;
     _processR->getValueAtTime(args.time, processR);
     _processG->getValueAtTime(args.time, processG);
@@ -807,51 +773,12 @@ PremultPlugin<isPremult>::getClipPreferences(ClipPreferencesSetter &clipPreferen
     clipPreferences.setClipComponents(*_dstClip, ePixelComponentRGBA);
 }
 
-static std::string
-premultString(PreMultiplicationEnum e)
-{
-    switch (e) {
-    case eImageOpaque:
-
-        return "Opaque";
-    case eImagePreMultiplied:
-
-        return "PreMultiplied";
-    case eImageUnPreMultiplied:
-
-        return "UnPreMultiplied";
-    }
-
-    return "Unknown";
-}
-
 template<bool isPremult>
 void
 PremultPlugin<isPremult>::changedParam(const InstanceChangedArgs &args,
                                        const std::string &paramName)
 {
-    if ( (paramName == kParamClipInfo) && _srcClip && (args.reason == eChangeUserEdit) ) {
-        std::string msg;
-        msg += "Input; ";
-        if (!_srcClip || !_srcClip->isConnected()) {
-            msg += "N/A";
-        } else {
-            msg += premultString( _srcClip->getPreMultiplication() );
-        }
-        msg += "\n";
-        msg += "Output: ";
-        if (!_dstClip) {
-            msg += "N/A";
-        } else {
-            msg += premultString( _dstClip->getPreMultiplication() );
-        }
-        msg += "\n";
-        sendMessage(Message::eMessageMessage, "", msg);
-        //} else if ( (paramName == kParamPremult) && (args.reason == eChangeUserEdit) ) {
-        //    _premultChanged->setValue(true);
-    } else {
-        MultiPlaneEffect::changedParam(args, paramName);
-    }
+    MultiPlaneEffect::changedParam(args, paramName);
 }
 
 template<bool isPremult>
@@ -859,61 +786,6 @@ void
 PremultPlugin<isPremult>::changedClip(const InstanceChangedArgs & args,
                                       const std::string & clipName)
 {
-    // It is very dangerous to set this from the input premult, which is sometimes wrong.
-    // If the user wants to premult/unpremul, the default should always be to premult/unpremult
-    /*
-       if ( (clipName == kOfxImageEffectSimpleSourceClipName) &&
-         _srcClip && _srcClip->isConnected() &&
-         !_premultChanged->getValue() &&
-         ( args.reason == eChangeUserEdit) ) {
-        if (_srcClip->getPixelComponents() != ePixelComponentRGBA) {
-            _processR->setValue(false);
-            _processG->setValue(false);
-            _processB->setValue(false);
-            _processA->setValue(false);
-        } else {
-            switch ( _srcClip->getPreMultiplication() ) {
-            case eImageOpaque:
-                _processR->setValue(false);
-                _processG->setValue(false);
-                _processB->setValue(false);
-                _processA->setValue(false);
-                break;
-            case eImagePreMultiplied:
-                if (isPremult) {
-                    _processR->setValue(false);
-                    _processG->setValue(false);
-                    _processB->setValue(false);
-                    _processA->setValue(false);
-                    //_premult->setValue(eInputChannelNone);
-                } else {
-                    _processR->setValue(true);
-                    _processG->setValue(true);
-                    _processB->setValue(true);
-                    _processA->setValue(false);
-                    _premult->setValue(eInputChannelA);
-                }
-                break;
-            case eImageUnPreMultiplied:
-                if (!isPremult) {
-                    _processR->setValue(false);
-                    _processG->setValue(false);
-                    _processB->setValue(false);
-                    _processA->setValue(false);
-                    //_premult->setValue(eInputChannelNone);
-                } else {
-                    _processR->setValue(true);
-                    _processG->setValue(true);
-                    _processB->setValue(true);
-                    _processA->setValue(false);
-                    _premult->setValue(eInputChannelA);
-                }
-                break;
-            }
-            _premultChanged->setValue(true);
-        }
-       }
-     */
     MultiPlaneEffect::changedClip(args, clipName);
 } // >::changedClip
 
@@ -1063,17 +935,6 @@ PremultPluginFactory<isPremult>::describeInContext(ImageEffectDescriptor &desc,
 
     if (gIsMultiplanar) {
         MultiPlane::Factory::describeInContextAddAllPlanesOutputCheckbox(desc, page);
-    }
-
-
-
-    {
-        PushButtonParamDescriptor *param = desc.definePushButtonParam(kParamClipInfo);
-        param->setLabel(kParamClipInfoLabel);
-        param->setHint(kParamClipInfoHint);
-        if (page) {
-            page->addChild(*param);
-        }
     }
 
     // this parameter is left for backward-compatibility reasons, but it is never used
