@@ -1107,7 +1107,7 @@ def createInstance(app,group):
         param.setValue(False)
         del param
 
-    param = lastNode.getParam("premult")
+    param = lastNode.getParam("unPremultBy")
     if param is not None:
         param.setValue(True)
         del param
@@ -1145,7 +1145,7 @@ def createInstance(app,group):
         param.setValue(False)
         del param
 
-    param = lastNode.getParam("premult")
+    param = lastNode.getParam("unPremultBy")
     if param is not None:
         param.setValue(True)
         del param
