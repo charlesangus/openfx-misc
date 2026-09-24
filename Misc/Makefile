@@ -78,7 +78,6 @@ Reformat.o \
 Retime.o \
 Roto.o \
 Saturation.o \
-Shuffle.o \
 SideBySide.o \
 SlitScan.o \
 SpriteSheet.o \
@@ -223,8 +222,6 @@ $(TOP_SRCDIR)/Roto/net.sf.openfx.RotoPlugin.png \
 $(TOP_SRCDIR)/Roto/net.sf.openfx.RotoPlugin.svg \
 $(TOP_SRCDIR)/Saturation/net.sf.openfx.SaturationPlugin.png \
 $(TOP_SRCDIR)/Saturation/net.sf.openfx.SaturationPlugin.svg \
-$(TOP_SRCDIR)/Shuffle/net.sf.openfx.ShufflePlugin.png \
-$(TOP_SRCDIR)/Shuffle/net.sf.openfx.ShufflePlugin.svg \
 $(TOP_SRCDIR)/SideBySide/net.sf.openfx.sideBySidePlugin.png \
 $(TOP_SRCDIR)/SideBySide/net.sf.openfx.sideBySidePlugin.svg \
 $(TOP_SRCDIR)/SlitScan/net.sf.openfx.SlitScan.png \
@@ -310,7 +307,6 @@ $(TOP_SRCDIR)/Reformat \
 $(TOP_SRCDIR)/Retime \
 $(TOP_SRCDIR)/Roto \
 $(TOP_SRCDIR)/Saturation \
-$(TOP_SRCDIR)/Shuffle \
 $(TOP_SRCDIR)/SideBySide \
 $(TOP_SRCDIR)/SlitScan \
 $(TOP_SRCDIR)/SpriteSheet \
@@ -390,7 +386,6 @@ CXXFLAGS += \
 -I$(TOP_SRCDIR)/Retime \
 -I$(TOP_SRCDIR)/Roto \
 -I$(TOP_SRCDIR)/Saturation \
--I$(TOP_SRCDIR)/Shuffle \
 -I$(TOP_SRCDIR)/SideBySide \
 -I$(TOP_SRCDIR)/SlitScan \
 -I$(TOP_SRCDIR)/SpriteSheet \
