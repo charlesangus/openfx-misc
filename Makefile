@@ -64,7 +64,6 @@ Reformat \
 Retime \
 Roto \
 Saturation \
-Shuffle \
 SideBySide \
 SlitScan \
 SpriteSheet \
