@@ -2377,11 +2377,10 @@ DistortionPlugin::setupAndProcess(DistortionProcessorBase &processor,
                         }
 #                     endif
                     }
-                    // If the channel is unavailabe in the image, fill with 0 (1 for Alpha)
-                    // This may happen if the user selected  the hard-coded Alpha channel and the input is RGB
+                    // A channel absent from the fetched image reads as 0, alpha included.
                     if (p.channelIndex >= p.img->getPixelComponentCount()) {
                         p.img = 0;
-                        p.fillZero = p.channelIndex != 3;
+                        p.fillZero = true;
                     }
                 }
 
