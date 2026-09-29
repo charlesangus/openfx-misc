@@ -689,7 +689,7 @@ private:
         unused(rs);
         assert( (!processR && !processG && !processB) || (nComponents == 3 || nComponents == 4) );
         assert( !processA || (nComponents == 1 || nComponents == 4) );
-        assert(nComponents == 3 || nComponents == 4);
+        assert(nComponents == 1 || nComponents == 3 || nComponents == 4);
         assert(_dstImg);
         float unpPix[4] = {0.f, 0.f, 0.f, 0.f};
         float tmpPix[4] = {0.f, 0.f, 0.f, 0.f};
@@ -787,11 +787,13 @@ public:
 
         _dstClip = fetchClip(kOfxImageEffectOutputClipName);
         assert( _dstClip && (!_dstClip->isConnected() || _dstClip->getPixelComponents() == ePixelComponentRGB ||
-                             _dstClip->getPixelComponents() == ePixelComponentRGBA) );
+                             _dstClip->getPixelComponents() == ePixelComponentRGBA ||
+                             _dstClip->getPixelComponents() == ePixelComponentAlpha) );
         _srcClip = getContext() == eContextGenerator ? NULL : fetchClip(kOfxImageEffectSimpleSourceClipName);
         assert( (!_srcClip && getContext() == eContextGenerator) ||
                 ( _srcClip && (!_srcClip->isConnected() || _srcClip->getPixelComponents() ==  ePixelComponentRGB ||
-                               _srcClip->getPixelComponents() == ePixelComponentRGBA) ) );
+                               _srcClip->getPixelComponents() == ePixelComponentRGBA ||
+                               _srcClip->getPixelComponents() == ePixelComponentAlpha) ) );
         _maskClip = fetchClip(getContext() == eContextPaint ? "Brush" : "Mask");
         assert(!_maskClip || !_maskClip->isConnected() || _maskClip->getPixelComponents() == ePixelComponentAlpha);
         _blackPoint = fetchRGBAParam(kParamBlackPoint);
@@ -1057,8 +1059,28 @@ GradePlugin::render(const RenderArguments &args)
 
     assert( kSupportsMultipleClipPARs   || !_srcClip || !_srcClip->isConnected() || _srcClip->getPixelAspectRatio() == _dstClip->getPixelAspectRatio() );
     assert( kSupportsMultipleClipDepths || !_srcClip || !_srcClip->isConnected() || _srcClip->getPixelDepth()       == _dstClip->getPixelDepth() );
-    assert(dstComponents == ePixelComponentRGB || dstComponents == ePixelComponentRGBA);
-    if (dstComponents == ePixelComponentRGBA) {
+    assert(dstComponents == ePixelComponentRGB || dstComponents == ePixelComponentRGBA || dstComponents == ePixelComponentAlpha);
+    if (dstComponents == ePixelComponentAlpha) {
+        switch (dstBitDepth) {
+        case eBitDepthUByte: {
+            GradeProcessor<unsigned char, 1, 255> fred(*this);
+            setupAndProcess(fred, args);
+            break;
+        }
+        case eBitDepthUShort: {
+            GradeProcessor<unsigned short, 1, 65535> fred(*this);
+            setupAndProcess(fred, args);
+            break;
+        }
+        case eBitDepthFloat: {
+            GradeProcessor<float, 1, 1> fred(*this);
+            setupAndProcess(fred, args);
+            break;
+        }
+        default:
+            throwSuiteStatusException(kOfxStatErrUnsupported);
+        }
+    } else if (dstComponents == ePixelComponentRGBA) {
         switch (dstBitDepth) {
         case eBitDepthUByte: {
             GradeProcessor<unsigned char, 4, 255> fred(*this);
@@ -1288,6 +1310,7 @@ GradePluginFactory::describeInContext(ImageEffectDescriptor &desc,
 
     srcClip->addSupportedComponent(ePixelComponentRGBA);
     srcClip->addSupportedComponent(ePixelComponentRGB);
+    srcClip->addSupportedComponent(ePixelComponentAlpha);
     srcClip->setTemporalClipAccess(false);
     srcClip->setSupportsTiles(kSupportsTiles);
     srcClip->setIsMask(false);
@@ -1296,6 +1319,7 @@ GradePluginFactory::describeInContext(ImageEffectDescriptor &desc,
     ClipDescriptor *dstClip = desc.defineClip(kOfxImageEffectOutputClipName);
     dstClip->addSupportedComponent(ePixelComponentRGBA);
     dstClip->addSupportedComponent(ePixelComponentRGB);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTiles);
 
     ClipDescriptor *maskClip = (context == eContextPaint) ? desc.defineClip("Brush") : desc.defineClip("Mask");

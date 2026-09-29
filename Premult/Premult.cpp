@@ -278,7 +278,7 @@ private:
         unused(rs);
         bool doc[4];
 
-        doc[0] = processR;
+        doc[0] = (nComponents == 1) ? processA : processR;
         doc[1] = processG;
         doc[2] = processB;
         doc[3] = processA;
@@ -769,8 +769,9 @@ PremultPlugin<isPremult>::getClipPreferences(ClipPreferencesSetter &clipPreferen
     MultiPlaneEffect::getClipPreferences(clipPreferences);
 
     // Both input clip and output clip work on the same plane.
-    clipPreferences.setClipComponents(*_srcClip, ePixelComponentRGBA);
-    clipPreferences.setClipComponents(*_dstClip, ePixelComponentRGBA);
+    PixelComponentEnum outputComps = getDefaultOutputClipComponents();
+    clipPreferences.setClipComponents(*_srcClip, outputComps);
+    clipPreferences.setClipComponents(*_dstClip, outputComps);
 }
 
 template<bool isPremult>
@@ -863,7 +864,7 @@ PremultPluginFactory<isPremult>::describeInContext(ImageEffectDescriptor &desc,
 
     srcClip->addSupportedComponent(ePixelComponentRGBA);
     //srcClip->addSupportedComponent(ePixelComponentRGB);
-    //srcClip->addSupportedComponent(ePixelComponentAlpha);
+    srcClip->addSupportedComponent(ePixelComponentAlpha);
     srcClip->setTemporalClipAccess(false);
     srcClip->setSupportsTiles(kSupportsTiles);
     srcClip->setIsMask(false);
@@ -872,7 +873,7 @@ PremultPluginFactory<isPremult>::describeInContext(ImageEffectDescriptor &desc,
     ClipDescriptor *dstClip = desc.defineClip(kOfxImageEffectOutputClipName);
     dstClip->addSupportedComponent(ePixelComponentRGBA);
     //dstClip->addSupportedComponent(ePixelComponentRGB);
-    //dstClip->addSupportedComponent(ePixelComponentAlpha);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTiles);
 
     // make some pages and to things in

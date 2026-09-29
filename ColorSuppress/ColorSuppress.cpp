@@ -845,7 +845,7 @@ ColorSuppressPluginFactory::describeInContext(ImageEffectDescriptor &desc,
 #ifdef OFX_EXTENSIONS_NATRON
     //srcClip->addSupportedComponent(ePixelComponentXY);
 #endif
-    //srcClip->addSupportedComponent(ePixelComponentAlpha);
+    srcClip->addSupportedComponent(ePixelComponentAlpha);
     srcClip->setTemporalClipAccess(false);
     srcClip->setSupportsTiles(kSupportsTiles);
     srcClip->setIsMask(false);
@@ -857,7 +857,7 @@ ColorSuppressPluginFactory::describeInContext(ImageEffectDescriptor &desc,
 #ifdef OFX_EXTENSIONS_NATRON
     //dstClip->addSupportedComponent(ePixelComponentXY);
 #endif
-    //dstClip->addSupportedComponent(ePixelComponentAlpha);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTiles);
 
     ClipDescriptor *maskClip = (context == eContextPaint) ? desc.defineClip("Brush") : desc.defineClip("Mask");
