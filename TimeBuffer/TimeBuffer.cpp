@@ -950,7 +950,7 @@ public:
         assert(_dstClip);
         _srcClip = fetchClip(kOfxImageEffectSimpleSourceClipName);
         assert(_srcClip);
-        _syncClip = fetchClip(kOfxImageEffectSimpleSourceClipName);
+        _syncClip = fetchClip(kClipSync);
         assert(_syncClip);
 
         _bufferName = fetchStringParam(kParamBufferName);
@@ -1179,8 +1179,14 @@ TimeBufferWritePlugin::render(const RenderArguments &args)
     const double time = args.time;
     auto_ptr<const Image> src( ( _srcClip && _srcClip->isConnected() ) ?
                                     _srcClip->fetchImage(time) : 0 );
+    if ( !src.get() ) {
+        setPersistentMessage(Message::eMessageError, "", "The Source clip must be connected to the stream to buffer.");
+        throwSuiteStatusException(kOfxStatFailed);
+
+        return;
+    }
 # ifndef NDEBUG
-    if ( src.get() ) {
+    {
         checkBadRenderScaleOrField(src, args);
         BitDepthEnum srcBitDepth      = src->getPixelDepth();
         PixelComponentEnum srcComponents = src->getPixelComponents();
