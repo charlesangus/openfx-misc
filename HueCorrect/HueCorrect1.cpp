@@ -52,7 +52,7 @@ using namespace OFX;
 
 OFXS_NAMESPACE_ANONYMOUS_ENTER
 
-#define kPluginName "HueCorrectOFX"
+#define kPluginName "HueCorrect1OFX"
 #define kPluginGrouping "Color"
 #define kPluginDescription \
     "Apply hue-dependent color adjustments using lookup curves.\n" \
@@ -71,7 +71,7 @@ OFXS_NAMESPACE_ANONYMOUS_ENTER
     "\n" \
     "See also: https://web.archive.org/web/20220627022150/http://www.opticalenquiry.com/nuke/index.php?title=HueCorrect"
 
-#define kPluginIdentifier "net.sf.openfx.HueCorrect"
+#define kPluginIdentifier "net.sf.openfx.HueCorrect1"
 // History:
 // version 1.0 (deprecated): initial version
 // version 2.0 (in HueCorrect.cpp): add Hue vs Hue support

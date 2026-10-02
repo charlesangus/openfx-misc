@@ -270,6 +270,8 @@ FILE(GLOB MISC_RESOURCES
   "Grade/net.sf.openfx.GradePlugin.svg"
   "HueCorrect/net.sf.openfx.HueCorrect.png"
   "HueCorrect/net.sf.openfx.HueCorrect.svg"
+  "HueCorrect/net.sf.openfx.HueCorrect1.png"
+  "HueCorrect/net.sf.openfx.HueCorrect1.svg"
   "HueCorrect/net.sf.openfx.HueKeyer.png"
   "HueCorrect/net.sf.openfx.HueKeyer.svg"
   "HSVTool/net.sf.openfx.HSVToolPlugin.png"
