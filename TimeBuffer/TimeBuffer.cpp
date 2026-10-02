@@ -266,10 +266,9 @@ public:
             }
         }
         _dstClip = fetchClip(kOfxImageEffectOutputClipName);
-        assert( _dstClip && (!_dstClip->isConnected() || _dstClip->getPixelComponents() == ePixelComponentRGBA) );
+        assert(_dstClip);
         _srcClip = getContext() == eContextGenerator ? NULL : fetchClip(kOfxImageEffectSimpleSourceClipName);
-        assert( (!_srcClip && getContext() == eContextGenerator) ||
-                ( _srcClip && (!_srcClip->isConnected() || _srcClip->getPixelComponents() ==  ePixelComponentRGBA) ) );
+        assert(!_srcClip || getContext() != eContextGenerator);
 
         _bufferName = fetchStringParam(kParamBufferName);
         _startFrame = fetchIntParam(kParamStartFrame);
@@ -486,7 +485,6 @@ TimeBufferReadPlugin::render(const RenderArguments &args)
     PixelComponentEnum dstComponents  = dst->getPixelComponents();
 
     assert(dstBitDepth == eBitDepthFloat);
-    assert(dstComponents == ePixelComponentRGBA);
 
     // do the rendering
     TimeBuffer* timeBuffer = 0;
@@ -581,6 +579,12 @@ TimeBufferReadPlugin::render(const RenderArguments &args)
             return;
         }
     }
+    if (timeBuffer->pixelComponents != dstComponents) {
+        setPersistentMessage(Message::eMessageError, "", "The TimeBuffer holds a different pixel layout than this effect's output. Check that the Source input has the same layout as the stream sent to TimeBufferWrite.");
+        throwSuiteStatusException(kOfxStatFailed);
+
+        return;
+    }
     //   - when the buffer is locked and clean, it is copied to output and unlocked
     copyPixels( *this, args.renderWindow, args.renderScale,
                 (void*)&timeBuffer->pixelData.front(),
@@ -610,6 +614,10 @@ TimeBufferReadPlugin::getClipPreferences(ClipPreferencesSetter &clipPreferences)
     }
     clearPersistentMessage();
     clipPreferences.setOutputFrameVarying(true);
+    // The buffer is written from the stream the user feeds TimeBufferWrite, which the
+    // optional Source input stands in for on this side.
+    const bool srcConnected = _srcClip && _srcClip->isConnected();
+    clipPreferences.setClipComponents(*_dstClip, srcConnected ? _srcClip->getPixelComponents() : ePixelComponentRGBA);
 }
 
 bool
@@ -785,6 +793,7 @@ TimeBufferReadPluginFactory::describeInContext(ImageEffectDescriptor &desc,
     ClipDescriptor *srcClip = desc.defineClip(kOfxImageEffectSimpleSourceClipName);
 
     srcClip->addSupportedComponent(ePixelComponentRGBA);
+    srcClip->addSupportedComponent(ePixelComponentAlpha);
     srcClip->setTemporalClipAccess(false);
     srcClip->setSupportsTiles(kSupportsTilesRead);
     srcClip->setIsMask(false);
@@ -793,6 +802,7 @@ TimeBufferReadPluginFactory::describeInContext(ImageEffectDescriptor &desc,
     // create the mandated output clip
     ClipDescriptor *dstClip = desc.defineClip(kOfxImageEffectOutputClipName);
     dstClip->addSupportedComponent(ePixelComponentRGBA);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTilesRead);
 
 
@@ -937,11 +947,11 @@ public:
         }
 
         _dstClip = fetchClip(kOfxImageEffectOutputClipName);
-        assert( _dstClip && (!_dstClip->isConnected() || _dstClip->getPixelComponents() == ePixelComponentRGBA) );
+        assert(_dstClip);
         _srcClip = fetchClip(kOfxImageEffectSimpleSourceClipName);
-        assert( _srcClip && (!_srcClip->isConnected() || _srcClip->getPixelComponents() == ePixelComponentRGBA) );
+        assert(_srcClip);
         _syncClip = fetchClip(kOfxImageEffectSimpleSourceClipName);
-        assert(_syncClip && _syncClip->getPixelComponents() == ePixelComponentRGBA);
+        assert(_syncClip);
 
         _bufferName = fetchStringParam(kParamBufferName);
         _resetTrigger = fetchBooleanParam(kParamResetTrigger);
@@ -1158,7 +1168,6 @@ TimeBufferWritePlugin::render(const RenderArguments &args)
 # ifndef NDEBUG
     BitDepthEnum dstBitDepth    = dst->getPixelDepth();
     PixelComponentEnum dstComponents  = dst->getPixelComponents();
-    assert(dstComponents == ePixelComponentRGBA);
     if ( ( dstBitDepth != _dstClip->getPixelDepth() ) ||
          ( dstComponents != _dstClip->getPixelComponents() ) ) {
         setPersistentMessage(Message::eMessageError, "", "OFX Host gave image with wrong depth or components");
@@ -1304,12 +1313,14 @@ TimeBufferWritePluginFactory::describeInContext(ImageEffectDescriptor &desc,
     ClipDescriptor *srcClip = desc.defineClip(kOfxImageEffectSimpleSourceClipName);
 
     srcClip->addSupportedComponent(ePixelComponentRGBA);
+    srcClip->addSupportedComponent(ePixelComponentAlpha);
     srcClip->setTemporalClipAccess(false);
     srcClip->setSupportsTiles(kSupportsTilesWrite);
     srcClip->setIsMask(false);
 
     ClipDescriptor *syncClip = desc.defineClip(kClipSync);
     syncClip->addSupportedComponent(ePixelComponentRGBA);
+    syncClip->addSupportedComponent(ePixelComponentAlpha);
     syncClip->setTemporalClipAccess(false);
     syncClip->setSupportsTiles(kSupportsTilesRead);
     syncClip->setIsMask(false);
@@ -1317,6 +1328,7 @@ TimeBufferWritePluginFactory::describeInContext(ImageEffectDescriptor &desc,
     // create the mandated output clip
     ClipDescriptor *dstClip = desc.defineClip(kOfxImageEffectOutputClipName);
     dstClip->addSupportedComponent(ePixelComponentRGBA);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTilesWrite);
 
 
