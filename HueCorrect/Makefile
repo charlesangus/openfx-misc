@@ -3,6 +3,8 @@ PLUGINNAME = HueCorrect
 RESOURCES = \
 net.sf.openfx.HueCorrect.png \
 net.sf.openfx.HueCorrect.svg \
+net.sf.openfx.HueCorrect1.png \
+net.sf.openfx.HueCorrect1.svg \
 net.sf.openfx.HueKeyer.png \
 net.sf.openfx.HueKeyer.svg \
 
