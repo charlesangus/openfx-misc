@@ -771,6 +771,7 @@ LayerContactSheetPluginFactory::describeInContext(OFX::ImageEffectDescriptor &de
     // create the mandated output clip
     ClipDescriptor *dstClip = desc.defineClip(kOfxImageEffectOutputClipName);
     dstClip->addSupportedComponent(ePixelComponentRGBA);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTiles);
 
     // make some pages and to things in

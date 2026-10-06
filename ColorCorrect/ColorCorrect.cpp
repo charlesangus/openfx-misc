@@ -631,7 +631,7 @@ private:
         unused(rs);
         assert( (!processR && !processG && !processB) || (nComponents == 3 || nComponents == 4) );
         assert( !processA || (nComponents == 1 || nComponents == 4) );
-        assert(nComponents == 3 || nComponents == 4);
+        assert(nComponents == 1 || nComponents == 3 || nComponents == 4);
         float unpPix[4] = {0.f, 0.f, 0.f, 0.f};
         float tmpPix[4] = {0.f, 0.f, 0.f, 0.f};
         for (int y = procWindow.y1; y < procWindow.y2; y++) {
@@ -831,11 +831,13 @@ public:
 
         _dstClip = fetchClip(kOfxImageEffectOutputClipName);
         assert( _dstClip && (!_dstClip->isConnected() || _dstClip->getPixelComponents() == ePixelComponentRGB ||
-                             _dstClip->getPixelComponents() == ePixelComponentRGBA) );
+                             _dstClip->getPixelComponents() == ePixelComponentRGBA ||
+                             _dstClip->getPixelComponents() == ePixelComponentAlpha) );
         _srcClip = getContext() == eContextGenerator ? NULL : fetchClip(kOfxImageEffectSimpleSourceClipName);
         assert( (!_srcClip && getContext() == eContextGenerator) ||
                 ( _srcClip && (!_srcClip->isConnected() || _srcClip->getPixelComponents() ==  ePixelComponentRGB ||
-                               _srcClip->getPixelComponents() == ePixelComponentRGBA) ) );
+                               _srcClip->getPixelComponents() == ePixelComponentRGBA ||
+                               _srcClip->getPixelComponents() == ePixelComponentAlpha) ) );
         _maskClip = fetchClip(getContext() == eContextPaint ? "Brush" : "Mask");
         assert(!_maskClip || !_maskClip->isConnected() || _maskClip->getPixelComponents() == ePixelComponentAlpha);
         fetchColorControlGroup(kGroupMaster, &_masterParamsGroup);
@@ -1058,7 +1060,7 @@ ColorCorrectPlugin::render(const RenderArguments &args)
 
     assert( kSupportsMultipleClipPARs   || !_srcClip || !_srcClip->isConnected() || _srcClip->getPixelAspectRatio() == _dstClip->getPixelAspectRatio() );
     assert( kSupportsMultipleClipDepths || !_srcClip || !_srcClip->isConnected() || _srcClip->getPixelDepth()       == _dstClip->getPixelDepth() );
-    assert(dstComponents == ePixelComponentRGB || dstComponents == ePixelComponentRGBA);
+    assert(dstComponents == ePixelComponentRGB || dstComponents == ePixelComponentRGBA || dstComponents == ePixelComponentAlpha);
     double rangeMin, rangeMax;
     const double time = args.time;
 
@@ -1066,7 +1068,27 @@ ColorCorrectPlugin::render(const RenderArguments &args)
     bool clampBlack = _clampBlack->getValueAtTime(time);
     bool clampWhite = _clampWhite->getValueAtTime(time);
 
-    if (dstComponents == ePixelComponentRGBA) {
+    if (dstComponents == ePixelComponentAlpha) {
+        switch (dstBitDepth) {
+        case eBitDepthUByte: {
+            ColorCorrecter<unsigned char, 1, 255, 255> fred(*this, args, _rangesParam, rangeMin, rangeMax, clampBlack, clampWhite);
+            setupAndProcess(fred, args);
+            break;
+        }
+        case eBitDepthUShort: {
+            ColorCorrecter<unsigned short, 1, 65535, 65535> fred(*this, args, _rangesParam, rangeMin, rangeMax, clampBlack, clampWhite);
+            setupAndProcess(fred, args);
+            break;
+        }
+        case eBitDepthFloat: {
+            ColorCorrecter<float, 1, 1, 1023> fred(*this, args, _rangesParam, rangeMin, rangeMax, clampBlack, clampWhite);
+            setupAndProcess(fred, args);
+            break;
+        }
+        default:
+            throwSuiteStatusException(kOfxStatErrUnsupported);
+        }
+    } else if (dstComponents == ePixelComponentRGBA) {
         switch (dstBitDepth) {
         case eBitDepthUByte: {
             ColorCorrecter<unsigned char, 4, 255, 255> fred(*this, args, _rangesParam, rangeMin, rangeMax, clampBlack, clampWhite);
@@ -1370,6 +1392,7 @@ ColorCorrectPluginFactory::describeInContext(ImageEffectDescriptor &desc,
 
     srcClip->addSupportedComponent(ePixelComponentRGBA);
     srcClip->addSupportedComponent(ePixelComponentRGB);
+    srcClip->addSupportedComponent(ePixelComponentAlpha);
     srcClip->setTemporalClipAccess(false);
     srcClip->setSupportsTiles(kSupportsTiles);
     srcClip->setIsMask(false);
@@ -1378,6 +1401,7 @@ ColorCorrectPluginFactory::describeInContext(ImageEffectDescriptor &desc,
     ClipDescriptor *dstClip = desc.defineClip(kOfxImageEffectOutputClipName);
     dstClip->addSupportedComponent(ePixelComponentRGBA);
     dstClip->addSupportedComponent(ePixelComponentRGB);
+    dstClip->addSupportedComponent(ePixelComponentAlpha);
     dstClip->setSupportsTiles(kSupportsTiles);
 
     ClipDescriptor *maskClip = (context == eContextPaint) ? desc.defineClip("Brush") : desc.defineClip("Mask");
