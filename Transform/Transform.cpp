@@ -554,11 +554,7 @@ DirBlurPluginFactory::createInstance(OfxImageEffectHandle handle,
     return new TransformPlugin(handle, true, true);
 }
 
-static TransformPluginFactory p1(kPluginIdentifier, kPluginVersionMajor, kPluginVersionMinor);
-static TransformMaskedPluginFactory p2(kPluginMaskedIdentifier, kPluginVersionMajor, kPluginVersionMinor);
 static DirBlurPluginFactory p3(kPluginDirBlurIdentifier, kPluginVersionMajor, kPluginVersionMinor);
-mRegisterPluginFactoryInstance(p1)
-mRegisterPluginFactoryInstance(p2)
 mRegisterPluginFactoryInstance(p3)
 
 OFXS_NAMESPACE_ANONYMOUS_EXIT

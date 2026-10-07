@@ -3256,16 +3256,13 @@ CImgEdgeDetectPluginFactory<majorVersion>::createInstance(OfxImageEffectHandle h
 
 // Declare old versions for backward compatibility.
 // They have default for processAlpha set to false
-static CImgBlurPluginFactory<3> oldp1(kPluginIdentifier, 0);
 static CImgLaplacianPluginFactory<3> oldp2(kPluginIdentifierLaplacian, 0);
 static CImgChromaBlurPluginFactory<3> oldp3(kPluginIdentifierChromaBlur, 0);
 static CImgBloomPluginFactory<3> oldp4(kPluginIdentifierBloom, 0);
-mRegisterPluginFactoryInstance(oldp1)
 mRegisterPluginFactoryInstance(oldp2)
 mRegisterPluginFactoryInstance(oldp3)
 mRegisterPluginFactoryInstance(oldp4)
 
-static CImgBlurPluginFactory<kPluginVersionMajor> p1(kPluginIdentifier, kPluginVersionMinor);
 static CImgLaplacianPluginFactory<kPluginVersionMajor> p2(kPluginIdentifierLaplacian, kPluginVersionMinor);
 static CImgChromaBlurPluginFactory<kPluginVersionMajor> p3(kPluginIdentifierChromaBlur, kPluginVersionMinor);
 static CImgBloomPluginFactory<kPluginVersionMajor> p4(kPluginIdentifierBloom, kPluginVersionMinor);
@@ -3274,7 +3271,6 @@ static CImgSharpenPluginFactory<kPluginVersionMajor> p6(kPluginIdentifierSharpen
 static CImgSoftenPluginFactory<kPluginVersionMajor> p7(kPluginIdentifierSoften, kPluginVersionMinor);
 static CImgEdgeExtendPluginFactory<kPluginVersionMajor> p8(kPluginIdentifierEdgeExtend, kPluginVersionMinor);
 static CImgEdgeDetectPluginFactory<kPluginVersionMajor> p9(kPluginIdentifierEdgeDetect, kPluginVersionMinor);
-mRegisterPluginFactoryInstance(p1)
 mRegisterPluginFactoryInstance(p2)
 mRegisterPluginFactoryInstance(p3)
 mRegisterPluginFactoryInstance(p4)
