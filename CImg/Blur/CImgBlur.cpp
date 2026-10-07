@@ -3270,7 +3270,6 @@ static CImgErodeBlurPluginFactory<kPluginVersionMajor> p5(kPluginIdentifierErode
 static CImgSharpenPluginFactory<kPluginVersionMajor> p6(kPluginIdentifierSharpen, kPluginVersionMinor);
 static CImgSoftenPluginFactory<kPluginVersionMajor> p7(kPluginIdentifierSoften, kPluginVersionMinor);
 static CImgEdgeExtendPluginFactory<kPluginVersionMajor> p8(kPluginIdentifierEdgeExtend, kPluginVersionMinor);
-static CImgEdgeDetectPluginFactory<kPluginVersionMajor> p9(kPluginIdentifierEdgeDetect, kPluginVersionMinor);
 mRegisterPluginFactoryInstance(p2)
 mRegisterPluginFactoryInstance(p3)
 mRegisterPluginFactoryInstance(p4)
@@ -3278,6 +3277,5 @@ mRegisterPluginFactoryInstance(p5)
 mRegisterPluginFactoryInstance(p6)
 mRegisterPluginFactoryInstance(p7)
 mRegisterPluginFactoryInstance(p8)
-mRegisterPluginFactoryInstance(p9)
 
 OFXS_NAMESPACE_ANONYMOUS_EXIT
