@@ -1,0 +1,13 @@
+--- CImg.h	2026-10-20 10:42:41.000000000 -0400
++++ CImg.h	2026-10-20 10:42:48.000000000 -0400
+@@ -22318,9 +22318,9 @@
+         if (!std::strcmp(ss,"interpolation")) _cimg_mp_return(_cimg_mp_interpolation); // interpolation
+         if (!std::strcmp(ss,"boundary")) _cimg_mp_return(_cimg_mp_boundary); // boundary
+ 
++        variable_name.assign(ss,(unsigned int)(se + 1 - ss)).back() = 0;
+ #ifdef cimg_mp_operator_dollar
+         // External variable '$varname'.
+-        variable_name.assign(ss,(unsigned int)(se + 1 - ss)).back() = 0;
+         if (*ss=='$' && is_varname(variable_name._data + 1))
+           _cimg_mp_constant(cimg_mp_operator_dollar(variable_name._data + 1));
+ #endif
