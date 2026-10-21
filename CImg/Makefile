@@ -165,7 +165,7 @@ endif
 # commit b33dcc8f9f1acf1f276ded92c04f8231f6c23fcd is CImg 2.9.9
 CIMGVERSION=b33dcc8f9f1acf1f276ded92c04f8231f6c23fcd
 
-CImg.h: Inpaint/inpaint.h
+CImg.h: CImg.h.patch Inpaint/inpaint.h
 	curl -L -s -S -o $@ https://raw.githubusercontent.com/dtschump/CImg/$(CIMGVERSION)/CImg.h
 	patch -p0 -d. < CImg.h.patch
 #	patch -p0 -d. < CImg-2.0.0-anisotropic.patch
