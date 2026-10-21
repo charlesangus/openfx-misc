@@ -1688,8 +1688,12 @@ public:
     {
         //printf("blur render %g %dx%d+%d+%d (%dx%d)\n", args.time, args.renderWindow.x2-args.renderWindow.x1, args.renderWindow.y2-args.renderWindow.y1, args.renderWindow.x1, args.renderWindow.y1, cimg.width(), cimg.height());
 
-        // eBlurPluginEdgeExtend only works on RGBA
-        assert( !(_blurPlugin == eBlurPluginEdgeExtend && cimg.spectrum() != 4) );
+        // eBlurPluginEdgeExtend only works on RGBA. If the process toggles leave fewer
+        // channels, there is no complete matte to extend from: the image is passed
+        // through unchanged (the caller still copies cimg to the destination).
+        if (_blurPlugin == eBlurPluginEdgeExtend && (cimg.spectrum() != 4 || alphaChannel != 3)) {
+            return;
+        }
 
         if (_blurPlugin == eBlurPluginEdgeDetect) {
             // EdgeDetect has its own render function
